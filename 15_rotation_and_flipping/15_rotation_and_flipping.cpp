@@ -13,44 +13,45 @@ const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 //Texture wrapper class
-class LTexture
-{
-	public:
-		//Initializes variables
-		LTexture();
+class LTexture {
+public:
+    //Initializes variables
+    LTexture();
 
-		//Deallocates memory
-		~LTexture();
+    //Deallocates memory
+    ~LTexture();
 
-		//Loads image at specified path
-		bool loadFromFile( std::string path );
+    //Loads image at specified path
+    bool loadFromFile(std::string path);
 
-		//Deallocates texture
-		void free();
+    //Deallocates texture
+    void free();
 
-		//Set color modulation
-		void setColor( Uint8 red, Uint8 green, Uint8 blue );
+    //Set color modulation
+    void setColor(Uint8 red, Uint8 green, Uint8 blue);
 
-		//Set blending
-		void setBlendMode( SDL_BlendMode blending );
+    //Set blending
+    void setBlendMode(SDL_BlendMode blending);
 
-		//Set alpha modulation
-		void setAlpha( Uint8 alpha );
-		
-		//Renders texture at given point
-		void render( int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
+    //Set alpha modulation
+    void setAlpha(Uint8 alpha);
 
-		//Gets image dimensions
-		int getWidth();
-		int getHeight();
+    //Renders texture at given point
+    void render(int x, int y, SDL_Rect *clip = NULL, double angle = 0.0, SDL_Point *center = NULL,
+                SDL_RendererFlip flip = SDL_FLIP_NONE);
 
-	private:
-		//The actual hardware texture
-		SDL_Texture* mTexture;
+    //Gets image dimensions
+    int getWidth();
 
-		//Image dimensions
-		int mWidth;
-		int mHeight;
+    int getHeight();
+
+private:
+    //The actual hardware texture
+    SDL_Texture *mTexture;
+
+    //Image dimensions
+    int mWidth;
+    int mHeight;
 };
 
 //Starts up SDL and creates window
@@ -63,279 +64,241 @@ bool loadMedia();
 void close();
 
 //The window we'll be rendering to
-SDL_Window* gWindow = NULL;
+SDL_Window *gWindow = NULL;
 
 //The window renderer
-SDL_Renderer* gRenderer = NULL;
+SDL_Renderer *gRenderer = NULL;
 
 //Scene texture
 LTexture gArrowTexture;
 
 
-LTexture::LTexture()
-{
-	//Initialize
-	mTexture = NULL;
-	mWidth = 0;
-	mHeight = 0;
+LTexture::LTexture() {
+    //Initialize
+    mTexture = NULL;
+    mWidth = 0;
+    mHeight = 0;
 }
 
-LTexture::~LTexture()
-{
-	//Deallocate
-	free();
+LTexture::~LTexture() {
+    //Deallocate
+    free();
 }
 
-bool LTexture::loadFromFile( std::string path )
-{
-	//Get rid of preexisting texture
-	free();
+bool LTexture::loadFromFile(std::string path) {
+    //Get rid of preexisting texture
+    free();
 
-	//The final texture
-	SDL_Texture* newTexture = NULL;
+    //The final texture
+    SDL_Texture *newTexture = NULL;
 
-	//Load image at specified path
-	SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
-	if( loadedSurface == NULL )
-	{
-		printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
-	}
-	else
-	{
-		//Color key image
-		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 0, 0xFF, 0xFF ) );
+    //Load image at specified path
+    SDL_Surface *loadedSurface = IMG_Load(path.c_str());
+    if (loadedSurface == NULL) {
+        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
+    } else {
+        //Color key image
+        SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
 
-		//Create texture from surface pixels
-        newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
-		if( newTexture == NULL )
-		{
-			printf( "Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
-		}
-		else
-		{
-			//Get image dimensions
-			mWidth = loadedSurface->w;
-			mHeight = loadedSurface->h;
-		}
+        //Create texture from surface pixels
+        newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+        if (newTexture == NULL) {
+            printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+        } else {
+            //Get image dimensions
+            mWidth = loadedSurface->w;
+            mHeight = loadedSurface->h;
+        }
 
-		//Get rid of old loaded surface
-		SDL_FreeSurface( loadedSurface );
-	}
+        //Get rid of old loaded surface
+        SDL_FreeSurface(loadedSurface);
+    }
 
-	//Return success
-	mTexture = newTexture;
-	return mTexture != NULL;
+    //Return success
+    mTexture = newTexture;
+    return mTexture != NULL;
 }
 
-void LTexture::free()
-{
-	//Free texture if it exists
-	if( mTexture != NULL )
-	{
-		SDL_DestroyTexture( mTexture );
-		mTexture = NULL;
-		mWidth = 0;
-		mHeight = 0;
-	}
+void LTexture::free() {
+    //Free texture if it exists
+    if (mTexture != NULL) {
+        SDL_DestroyTexture(mTexture);
+        mTexture = NULL;
+        mWidth = 0;
+        mHeight = 0;
+    }
 }
 
-void LTexture::setColor( Uint8 red, Uint8 green, Uint8 blue )
-{
-	//Modulate texture rgb
-	SDL_SetTextureColorMod( mTexture, red, green, blue );
+void LTexture::setColor(Uint8 red, Uint8 green, Uint8 blue) {
+    //Modulate texture rgb
+    SDL_SetTextureColorMod(mTexture, red, green, blue);
 }
 
-void LTexture::setBlendMode( SDL_BlendMode blending )
-{
-	//Set blending function
-	SDL_SetTextureBlendMode( mTexture, blending );
-}
-		
-void LTexture::setAlpha( Uint8 alpha )
-{
-	//Modulate texture alpha
-	SDL_SetTextureAlphaMod( mTexture, alpha );
+void LTexture::setBlendMode(SDL_BlendMode blending) {
+    //Set blending function
+    SDL_SetTextureBlendMode(mTexture, blending);
 }
 
-void LTexture::render( int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip )
-{
-	//Set rendering space and render to screen
-	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
-
-	//Set clip rendering dimensions
-	if( clip != NULL )
-	{
-		renderQuad.w = clip->w;
-		renderQuad.h = clip->h;
-	}
-
-	//Render to screen
-	SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, angle, center, flip );
+void LTexture::setAlpha(Uint8 alpha) {
+    //Modulate texture alpha
+    SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
-int LTexture::getWidth()
-{
-	return mWidth;
+void LTexture::render(int x, int y, SDL_Rect *clip, double angle, SDL_Point *center, SDL_RendererFlip flip) {
+    //Set rendering space and render to screen
+    SDL_Rect renderQuad = {x, y, mWidth, mHeight};
+
+    //Set clip rendering dimensions
+    if (clip != NULL) {
+        renderQuad.w = clip->w;
+        renderQuad.h = clip->h;
+    }
+
+    //Render to screen
+    SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
-int LTexture::getHeight()
-{
-	return mHeight;
+int LTexture::getWidth() {
+    return mWidth;
 }
 
-bool init()
-{
-	//Initialization flag
-	bool success = true;
-
-	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-	{
-		printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
-		success = false;
-	}
-	else
-	{
-		//Set texture filtering to linear
-		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
-		{
-			printf( "Warning: Linear texture filtering not enabled!" );
-		}
-
-		//Create window
-		gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( gWindow == NULL )
-		{
-			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
-			success = false;
-		}
-		else
-		{
-			//Create vsynced renderer for window
-			gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
-			if( gRenderer == NULL )
-			{
-				printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
-				success = false;
-			}
-			else
-			{
-				//Initialize renderer color
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-
-				//Initialize PNG loading
-				int imgFlags = IMG_INIT_PNG;
-				if( !( IMG_Init( imgFlags ) & imgFlags ) )
-				{
-					printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
-					success = false;
-				}
-			}
-		}
-	}
-
-	return success;
+int LTexture::getHeight() {
+    return mHeight;
 }
 
-bool loadMedia()
-{
-	//Loading success flag
-	bool success = true;
+bool init() {
+    //Initialization flag
+    bool success = true;
 
-	//Load arrow
-	if( !gArrowTexture.loadFromFile( "15_rotation_and_flipping/arrow.png" ) )
-	{
-		printf( "Failed to load arrow texture!\n" );
-		success = false;
-	}
+    //Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+        success = false;
+    } else {
+        //Set texture filtering to linear
+        if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
+            printf("Warning: Linear texture filtering not enabled!");
+        }
 
-	return success;
+        //Create window
+        gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
+                                   SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        if (gWindow == NULL) {
+            printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+            success = false;
+        } else {
+            //Create vsynced renderer for window
+            gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            if (gRenderer == NULL) {
+                printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+                success = false;
+            } else {
+                //Initialize renderer color
+                SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+                //Initialize PNG loading
+                int imgFlags = IMG_INIT_PNG;
+                if (!(IMG_Init(imgFlags) & imgFlags)) {
+                    printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+                    success = false;
+                }
+            }
+        }
+    }
+
+    return success;
 }
 
-void close()
-{
-	//Free loaded images
-	gArrowTexture.free();
+bool loadMedia() {
+    //Loading success flag
+    bool success = true;
 
-	//Destroy window	
-	SDL_DestroyRenderer( gRenderer );
-	SDL_DestroyWindow( gWindow );
-	gWindow = NULL;
-	gRenderer = NULL;
-	
-	//Quit SDL subsystems
-	IMG_Quit();
-	SDL_Quit();
+    //Load arrow
+    if (!gArrowTexture.loadFromFile("15_rotation_and_flipping/arrow.png")) {
+        printf("Failed to load arrow texture!\n");
+        success = false;
+    }
+
+    return success;
 }
 
-int main( int argc, char* args[] )
-{
-	//Start up SDL and create window
-	if( !init() )
-	{
-		printf( "Failed to initialize!\n" );
-	}
-	else
-	{
-		//Load media
-		if( !loadMedia() )
-		{
-			printf( "Failed to load media!\n" );
-		}
-		else
-		{	
-			//Main loop flag
-			bool quit = false;
+void close() {
+    //Free loaded images
+    gArrowTexture.free();
 
-			//Event handler
-			SDL_Event e;
+    //Destroy window
+    SDL_DestroyRenderer(gRenderer);
+    SDL_DestroyWindow(gWindow);
+    gWindow = NULL;
+    gRenderer = NULL;
 
-			//Angle of rotation
-			double degrees = 0;
+    //Quit SDL subsystems
+    IMG_Quit();
+    SDL_Quit();
+}
 
-			//Flip type
-			SDL_RendererFlip flipType = SDL_FLIP_NONE;
+int main(int argc, char *args[]) {
+    //Start up SDL and create window
+    if (!init()) {
+        printf("Failed to initialize!\n");
+    } else {
+        //Load media
+        if (!loadMedia()) {
+            printf("Failed to load media!\n");
+        } else {
+            //Main loop flag
+            bool quit = false;
 
-            while (!quit){
-                while (SDL_PollEvent(&e)){
-                    if (e.type == SDL_QUIT){
+            //Event handler
+            SDL_Event e;
+
+            //Angle of rotation
+            double degrees = 0;
+
+            //Flip type
+            SDL_RendererFlip flipType = SDL_FLIP_NONE;
+
+            // Need this for screen to show on OSX since otherwise it's too quic.
+            while (!quit) {
+                while (SDL_PollEvent(&e)) {
+                    if (e.type == SDL_QUIT) {
                         quit = true;
                     }
-                    if (e.type == SDL_KEYDOWN){
+                    if (e.type == SDL_KEYDOWN) {
                         quit = true;
                     }
-                    if (e.type == SDL_MOUSEBUTTONDOWN){
+                    if (e.type == SDL_MOUSEBUTTONDOWN) {
                         quit = true;
                     }
                 }
             }
 
             quit = false;
-			//While application is running
-			while( !quit )
-			{
-				//Handle events on queue
-				while( true )
-				{
+            //While application is running
+            while (!quit) {
+                //Handle events on queue
+                while (true) {
                     degrees -= 30;
                     //Clear screen
-                    SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-                    SDL_RenderClear( gRenderer );
+                    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                    SDL_RenderClear(gRenderer);
 
                     //Render arrow
-                    gArrowTexture.render( ( SCREEN_WIDTH - gArrowTexture.getWidth() ) / 2, ( SCREEN_HEIGHT - gArrowTexture.getHeight() ) / 2, NULL, degrees, NULL, flipType );
+                    gArrowTexture.render((SCREEN_WIDTH - gArrowTexture.getWidth()) / 2,
+                                         (SCREEN_HEIGHT - gArrowTexture.getHeight()) / 2, NULL, degrees, NULL,
+                                         flipType);
 
                     //Update screen
-                    SDL_RenderPresent( gRenderer );
-				}
+                    SDL_RenderPresent(gRenderer);
+                }
 
 
-			}
-		}
-	}
+            }
+        }
+    }
 
-	//Free resources and close SDL
-	close();
+    //Free resources and close SDL
+    close();
 
-	return 0;
+    return 0;
 }
